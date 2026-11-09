@@ -1,0 +1,48 @@
+name: Build IslandBuddy IPA
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
+
+      - name: Build unsigned .app for a real device
+        run: |
+          xcodebuild \
+            -project IslandBuddy.xcodeproj \
+            -scheme IslandBuddy \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Package into unsigned .ipa
+        run: |
+          APP_PATH="build/Build/Products/Release-iphoneos/IslandBuddy.app"
+          mkdir -p Payload
+          cp -R "$APP_PATH" Payload/
+          zip -r IslandBuddy-unsigned.ipa Payload
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: IslandBuddy-unsigned-ipa
+          path: IslandBuddy-unsigned.ipa
