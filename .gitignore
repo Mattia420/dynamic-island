@@ -4,3 +4,4 @@ Generated/
 *.xcodeproj
 Payload/
 *.ipa
+.gh_token

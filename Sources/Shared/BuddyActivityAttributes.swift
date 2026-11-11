@@ -1,4 +1,5 @@
 import ActivityKit
+import Foundation
 
 struct BuddyActivityAttributes: ActivityAttributes {
     struct ContentState: Codable, Hashable {
